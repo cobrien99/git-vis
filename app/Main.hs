@@ -3,6 +3,10 @@ module Main where
 import GitFollowers
 import GitRepos
 import Prompt
+import Data.Vector as V(map)
+
+handleMaybe :: Maybe a -> a
+handleMaybe (Just a) = a
 
 main :: IO ()
 main = do
@@ -10,4 +14,4 @@ main = do
         publicity <- prompt "See all users repos or only owned repos: " 
         --result <- githubFollowers input
         result <- getUsersRepos name publicity
-        putStrLn result
+        putStrLn (concat (V.map show (handleMaybe result)))
