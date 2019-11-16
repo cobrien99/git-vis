@@ -24,6 +24,7 @@ dependencies:
 - github
 - text
 - base-compat
+- vector
 
 library:
   source-dirs: src

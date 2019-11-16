@@ -1,7 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Git
+module GitFollowers
     ( githubFollowers
     ) where
 
@@ -13,11 +13,12 @@ import Data.Monoid       ((<>))
 import qualified GitHub.Endpoints.Users.Followers as G
 import qualified GitHub.Data.Name as Name
 
-githubFollowers :: String -> IO String
+--takes a username and returns an array of the users following that username
+githubFollowers :: String -> IO [String]
 githubFollowers userName = do
     possibleUsers <- G.usersFollowing (Name.N $ pack userName)
-    return $ either show
-                        (foldMap ((<> "\n") . formatUser))
+    return $ words $ either show
+                        (foldMap ((<> " ") . formatUser))
                         possibleUsers
 
 formatUser :: G.SimpleUser -> String

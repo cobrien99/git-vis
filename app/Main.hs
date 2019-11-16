@@ -1,8 +1,12 @@
 module Main where
 
-import Git
+import GitFollowers
+import GitRepos
 
 main :: IO ()
-main = do input <- getLine
-          followers <- githubFollowers input
-          putStrLn followers
+main = do
+          name <- getLine
+          publicity <- getLine
+          --result <- githubFollowers input
+          result <- getUsersRepos name publicity
+          print result
