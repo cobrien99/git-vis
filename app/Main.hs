@@ -1,6 +1,8 @@
 module Main where
 
-import Lib
+import Git
 
 main :: IO ()
-main = test
+main = do input <- getLine
+          followers <- githubFollowers input
+          putStrLn followers
