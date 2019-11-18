@@ -1,17 +1,17 @@
 module GitRepos (
-    getUsersRepos, Repo, calcSize)
+    getUsersRepos, Repo, calcSize, getMostFreqLangFromRepos)
 where
 
 import qualified GitHub.Endpoints.Repos as G
 import qualified GitHub.Data.Name as Name
 import Data.Text         (pack, unpack)
 import Data.Char (toLower)
-import Data.Vector as V ( map, Vector, head, tail)
+import Data.Vector as V ( map, Vector, head, tail, toList)
 import Data.Foldable (maximumBy)
 
-getUsersRepos :: String -> String -> IO (Maybe (Vector Repo))
-getUsersRepos userName publicity = do
-    possibleRepos <- G.userRepos (Name.N $ pack userName) (getPublicity publicity)
+getUsersRepos :: String -> String -> Maybe G.Auth -> IO (Maybe (Vector Repo))
+getUsersRepos userName publicity auth = do
+    possibleRepos <- G.userRepos' auth (Name.N $ Data.Text.pack userName) (getPublicity publicity)
 
     case possibleRepos of
        (Left _)  -> return Nothing
@@ -37,22 +37,21 @@ getFork Nothing = True
 data Repo = 
     Repo {
         name :: String,
-        size :: Int,
         isAFork :: Bool,
-        language :: String
+        langFreq :: LangFreq
     }
 
 makeRepo :: G.Repo -> Repo
 makeRepo x = Repo      (unpack $ G.untagName $ G.repoName x)
-                       (getSize $ G.repoSize x)
                        (getFork $ G.repoFork x)
-                       (formatLanguage $ G.repoLanguage x)
+                       (((formatLanguage $ G.repoLanguage x),
+                        (getSize $ G.repoSize x)) :: LangFreq)
                         
 instance Show Repo where
-    show (Repo name size isFork language) = name ++ " " ++
-                                            show size ++ "kb " ++ 
+    show (Repo name isFork (l, f)) = name ++ " " ++
+                                            show f ++ "kb " ++ 
                                             show isFork ++ " " ++ 
-                                            language ++ "\n"
+                                            l ++ "\n"
 
 
 
@@ -62,7 +61,7 @@ type LangFreq = (String, Int)
 calcSize :: Vector Repo -> Int
 calcSize v
     | null v    = 0
-    | otherwise = size (V.head v) + calcSize (V.tail v)
+    | otherwise = snd (langFreq (V.head v)) + calcSize (V.tail v)
 
 
 getMostFreqLang :: [LangFreq] -> LangFreq
@@ -79,3 +78,11 @@ addLang (l,f) ((a,b):xs)
     | a == l = (a, b') : xs
     | otherwise = addLang (l,f) xs
     where b' = b + f
+
+getMostFreqLangFromRepos :: Vector Repo -> String
+getMostFreqLangFromRepos x = fst $ getMostFreqLang (langFreqsFromList langFreqs)
+                             where langFreqs = V.toList (V.map langFreq x)
+
+langFreqsFromList :: [LangFreq] -> [LangFreq]
+langFreqsFromList [x] = addLang x []
+langFreqsFromList (x:xs) = addLang x (langFreqsFromList xs)

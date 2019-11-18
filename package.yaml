@@ -25,6 +25,8 @@ dependencies:
 - text
 - base-compat
 - vector
+- load-env
+- bytestring
 
 library:
   source-dirs: src
