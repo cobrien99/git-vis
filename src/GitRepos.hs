@@ -6,21 +6,26 @@ import qualified GitHub.Endpoints.Repos as G
 import qualified GitHub.Data.Name as Name
 import Data.Text         (pack, unpack)
 import Data.Char (toLower)
-import Data.Vector as V ( map, Vector, head, tail, toList)
+import Data.Vector as V ( map, Vector, head, tail, toList, null, empty, cons)
 import Data.Foldable (maximumBy)
 
-getUsersRepos :: String -> String -> Maybe G.Auth -> IO (Maybe (Vector Repo))
-getUsersRepos userName publicity auth = do
+getUsersRepos :: String -> String -> String -> Maybe G.Auth -> IO (Maybe (Vector Repo))
+getUsersRepos userName publicity removeForks auth = do
     possibleRepos <- G.userRepos' auth (Name.N $ Data.Text.pack userName) (getPublicity publicity)
 
     case possibleRepos of
        (Left _)  -> return Nothing
-       (Right repos) -> return $ Just (V.map makeRepo repos)
+       (Right repos) -> return $ Just $ removeForksIfWanted removeForks (V.map makeRepo repos)
 
 getPublicity :: String -> G.RepoPublicity
 getPublicity x
             | toLower (Prelude.head x) == 'o' = G.RepoPublicityOwner
             | otherwise = G.RepoPublicityAll
+
+removeForksIfWanted :: String -> Vector Repo -> Vector Repo
+removeForksIfWanted  x
+            | toLower (Prelude.head x) == 'y' = removeForks
+            | otherwise = id
 
 formatLanguage :: Maybe G.Language -> String
 formatLanguage (Just language) = unpack $ G.getLanguage language
@@ -60,7 +65,7 @@ type LangFreq = (String, Int)
 
 calcSize :: Vector Repo -> Int
 calcSize v
-    | null v    = 0
+    | V.null v    = 0
     | otherwise = snd (langFreq (V.head v)) + calcSize (V.tail v)
 
 
@@ -86,3 +91,9 @@ getMostFreqLangFromRepos x = fst $ getMostFreqLang (langFreqsFromList langFreqs)
 langFreqsFromList :: [LangFreq] -> [LangFreq]
 langFreqsFromList [x] = addLang x []
 langFreqsFromList (x:xs) = addLang x (langFreqsFromList xs)
+
+removeForks :: Vector Repo -> Vector Repo
+removeForks v 
+    | V.null v = V.empty
+    | (isAFork $ V.head v )== False = V.cons (V.head v)  (removeForks $ V.tail v)
+    | otherwise = removeForks $ V.tail v --if the head is a fork
