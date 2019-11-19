@@ -1,7 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module GitFollowers
-    ( githubFollowers, Follower
+    ( githubFollowers, Follower, getFollowerName
     ) where
 
 import Prelude.Compat 
@@ -30,6 +30,9 @@ data Follower =
         avatarUrl :: String,
         profileUrl :: String
     }
+
+getFollowerName :: Follower -> String
+getFollowerName (Follower name _ _ _) = name
 
 makeFollower :: G.SimpleUser -> Follower
 makeFollower x = Follower      (unpack $ G.untagName $ G.simpleUserLogin x)

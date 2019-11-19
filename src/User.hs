@@ -1,10 +1,12 @@
 module User (
-    User, makeUser
+    User, makeUser, totalSize, mostUsedLang, name
     ) where
 
-import Data.Vector as V (Vector, length, map)
+import Data.Vector as V (Vector, length, map, null, head, tail)
 import GitRepos
 import GitFollowers
+
+import Data.HashSet as H
 
 
 data User =
@@ -24,7 +26,8 @@ instance Show User where
                                 "total size: " ++ show totalSize ++ "kb\n" ++
                                 "most used language: " ++ lang ++ "\n" ++
                                 "repos:\n" ++ concat (V.map show repos) ++
-                                "followers:\n" ++ concat (V.map show followers)
+                                "followers:\n" ++ concat (V.map show followers) ++
+                                "hashed: " ++ show (hashFollowers followers)
 
 makeUser :: String -> Vector Repo -> Vector Follower -> User
 makeUser name repos followers = User name
@@ -33,3 +36,9 @@ makeUser name repos followers = User name
                                      (calcSize repos)
                                      (getMostFreqLangFromRepos repos) --TODO write function in repos that takes an array of repos and returns most common Lang
                                      repos
+
+hashFollowers :: Vector Follower -> H.HashSet String
+hashFollowers v
+            | V.null v  = H.empty
+            | otherwise = H.insert (getFollowerName follower) (hashFollowers $ V.tail v)
+            where follower = V.head v :: Follower

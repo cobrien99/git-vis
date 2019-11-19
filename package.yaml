@@ -27,6 +27,9 @@ dependencies:
 - vector
 - load-env
 - bytestring
+- gloss
+- unordered-containers
+- json
 
 library:
   source-dirs: src
