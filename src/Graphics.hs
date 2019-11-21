@@ -1,39 +1,43 @@
 module Graphics
     (  
-        draw
+        draw, makeProfileCircle
         ) where
 
-import User (User, totalSize, mostUsedLang, name)
+import User (User, totalSize, mostUsedLang, name, followers, hashFollowers)
     --TODO
     --convert languages to colours
     --put all the main users followers in a hash set
 
 import Graphics.Gloss as G
 
-draw :: User -> IO ()
-draw user = display displaySettings white (makeProfileCircle user)
+draw :: Picture -> IO ()
+draw picture = display displaySettings white picture
+
 
 
 width, height, offset :: Int
-width = 300
-height = 300
-offset = 100
+width = 1000
+height = 1000
+offset = 0
 
 
 displaySettings :: G.Display
 displaySettings = InWindow "Git-Vis" (width, height) (offset, offset)
 
-makeProfileCircle :: User -> Picture
-makeProfileCircle user = Pictures 
-                                [translate (0) (0) $ (Color col circle),
-                                translate (0) (0) $ name]
-    where circle = ThickCircle 0 $ getSizeCircle (User.totalSize user)
-          col = getLangColour (User.mostUsedLang user)
-          name = (Text $ User.name user)
+makeProfileCircle :: IO (User) -> IO (Picture)
+makeProfileCircle u = do
+                    user <- u
+                    let circle = circleSolid (getSizeCircle (User.totalSize user))
+                    let colour = getLangColour (User.mostUsedLang user)
+                    let name = (Text $ User.name user)
+                    return (Pictures [translate (0) (0) $ (Color colour circle),
+                                 Scale 0.5 0.5 $ translate (-50) 0 name])
+          
+          
 
 
 getSizeCircle :: Int -> Float
-getSizeCircle x = (fromIntegral x) / 10
+getSizeCircle x = log (fromIntegral x) * 50
 
 getLangColour :: String -> Color
 getLangColour _ = red

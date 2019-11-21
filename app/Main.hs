@@ -10,6 +10,8 @@ import User
 import GitHub.Auth as A
 import qualified Data.ByteString.Char8 as C
 import Graphics
+import Graphics.Gloss as G
+import Data.HashSet as H
 
 handleMaybe :: Maybe a -> a
 handleMaybe (Just a) = a
@@ -22,8 +24,40 @@ main = do
         publicity <- prompt "See all users repos or only owned repos: "
         removeForks <- prompt "Ignore forked repos: "
 
-        repos <- getUsersRepos name publicity removeForks (Just (A.OAuth (C.pack token)))
-        followers <- githubFollowers name (Just (A.OAuth (C.pack token)))
-        let profile = makeUser name (handleMaybe repos) (handleMaybe followers)
-        print profile
-        draw profile
+        let nameToProfile = \x ->  makeProfile x publicity removeForks token
+
+        userProfile <- nameToProfile name Nothing
+
+        let hashset = hashFollowers (getFollowerNames userProfile)
+
+        let followerNames = getFollowerNames userProfile
+        let followerProfiles = Prelude.map (\x -> nameToProfile x (Just hashset)) followerNames
+
+        --circles <- mapM makeProfileCircle followerProfiles
+
+        mapM printIoUser followerProfiles
+
+        --draw (G.Pictures circles)
+
+        print userProfile
+
+
+        --draw userProfile
+
+makeProfile :: String -> String -> String -> String -> Maybe (HashSet String) -> IO User
+makeProfile name publicity removeForks token hashset = do
+        let getRepos = \x -> getUsersRepos x publicity removeForks (Just (A.OAuth (C.pack token)))
+        let getFollowers = \x -> githubFollowers x (Just (A.OAuth (C.pack token)))
+        repos <- getRepos name
+        followers <- getFollowers name
+
+        let filteredFollowers = filterFollowersByHashset (handleMaybe followers) hashset
+        --filter to only include users that follow the main user
+
+        let userProfile = makeUser name (handleMaybe repos) filteredFollowers
+        return userProfile
+
+printIoUser :: IO User -> IO ()
+printIoUser u = do
+    user <- u
+    print user
