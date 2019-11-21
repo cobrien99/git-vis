@@ -31,18 +31,15 @@ main = do
         let hashset = hashFollowers (getFollowerNames userProfile)
 
         let followerNames = getFollowerNames userProfile
-        let followerProfiles = Prelude.map (\x -> nameToProfile x (Just hashset)) followerNames
+        followerProfiles <- Prelude.mapM (\x -> nameToProfile x (Just hashset)) followerNames
 
-        --circles <- mapM makeProfileCircle followerProfiles
+        let pic  = Graphics.draw followerProfiles
 
-        mapM printIoUser followerProfiles
+        Graphics.show pic
 
-        --draw (G.Pictures circles)
 
         print userProfile
 
-
-        --draw userProfile
 
 makeProfile :: String -> String -> String -> String -> Maybe (HashSet String) -> IO User
 makeProfile name publicity removeForks token hashset = do
@@ -56,8 +53,3 @@ makeProfile name publicity removeForks token hashset = do
 
         let userProfile = makeUser name (handleMaybe repos) filteredFollowers
         return userProfile
-
-printIoUser :: IO User -> IO ()
-printIoUser u = do
-    user <- u
-    print user
