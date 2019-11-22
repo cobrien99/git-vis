@@ -1,6 +1,5 @@
 module LangColours where
 
-import Text.JSON
 
 {-loadJSON :: IO (JSValue)
 loadJSON = do 

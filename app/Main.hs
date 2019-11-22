@@ -33,7 +33,7 @@ main = do
         let followerNames = getFollowerNames userProfile
         followerProfiles <- Prelude.mapM (\x -> nameToProfile x (Just hashset)) followerNames
 
-        let pic  = Graphics.draw followerProfiles
+        let pic  = Graphics.draw (followerProfiles ++ [userProfile])
 
         Graphics.show pic
 

@@ -25,12 +25,12 @@ displaySettings :: G.Display
 displaySettings = InWindow "Git-Vis" (width, height) (offset, offset)
 
 makeProfileCircle :: User -> [UserCoOrd] -> Picture
-makeProfileCircle user coOrds = drawPicAt (Pictures ([(Color colour circle),
-                                 drawPicAt name (-50,0)] ++ lines)) (x, y)
+makeProfileCircle user coOrds =  Pictures (lines ++ [drawPicAt (Color colour circle) (x, y),
+                                 drawPicAt name (x, y+500)])
                         where
                         circle = circleSolid (getSizeCircle (User.totalSize user))
                         colour = getLangColour (User.mostUsedLang user)
-                        name = (Text $ User.name user)
+                        name = Scale 5 5 (Text $ User.name user)
                         (x, y) = getUserCoOrds (User.name user) coOrds
                         lines = drawLinesToFollowers (x, y) (getFollowerNames user) coOrds
 
@@ -51,11 +51,11 @@ getOffset :: Int -> Float
 getOffset numFollowers = (2 * pi) / fromIntegral numFollowers
 
 calcCoOrds :: [User] -> Float -> (Float, Float) -> [UserCoOrd]
-calcCoOrds [] _ _ = []
+calcCoOrds [user] _ _ = [(User.name user, (0,0))]
 calcCoOrds (user:users) offset (prevX, prevY) =
-                (name, (x, y)) : calcCoOrds users offset (x, y)
-                where   x = prevX + 1000 * cos offset 
-                        y = prevY + 1000 * sin offset
+                (name, (x, y)) : calcCoOrds users offset (prevX + offset, prevY + offset)
+                where   x = 20000 * cos ( prevX + offset )
+                        y = 20000 * sin ( prevY + offset )
                         name = User.name user
 
 getUserCoOrds :: String -> [UserCoOrd] -> (Float, Float)
@@ -66,14 +66,18 @@ getUserCoOrds name (u:us)
 
 
 
+
+
+
 draw :: [User] -> Picture
 draw [] = Blank
 draw users = Pictures (map (`makeProfileCircle` coOrds) users)
     where   offset = getOffset (length users)
-            coOrds = calcCoOrds users offset (0, 100)
+            coOrds = calcCoOrds users offset (100, 0)
 
 
 drawLinesToFollowers :: (Float, Float) -> [String] -> [UserCoOrd] -> [Picture]
 drawLinesToFollowers _ [] _ = []
 drawLinesToFollowers (x, y) (name:names) coOrds = Line [(x,y), (getUserCoOrds name coOrds)]
                                                     : drawLinesToFollowers (x, y) names coOrds
+  

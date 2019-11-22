@@ -29,7 +29,7 @@ dependencies:
 - bytestring
 - gloss
 - unordered-containers
-- json
+- aeson
 
 library:
   source-dirs: src
