@@ -12,6 +12,7 @@ import qualified Data.ByteString.Char8 as C
 import Graphics
 import Graphics.Gloss as G
 import Data.HashSet as H
+import LangColours (loadJSON)
 
 handleMaybe :: Maybe a -> a
 handleMaybe (Just a) = a
@@ -30,10 +31,12 @@ main = do
 
         let hashset = hashFollowers (getFollowerNames userProfile)
 
+        colourJson <- loadJSON
+
         let followerNames = getFollowerNames userProfile
         followerProfiles <- Prelude.mapM (\x -> nameToProfile x (Just hashset)) followerNames
 
-        let pic  = Graphics.draw (followerProfiles ++ [userProfile])
+        let pic  = Graphics.draw (followerProfiles ++ [userProfile]) colourJson
 
         Graphics.show pic
 

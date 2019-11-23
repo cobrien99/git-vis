@@ -4,11 +4,9 @@ module Graphics
         ) where
 
 import User (User, totalSize, mostUsedLang, name, followers, hashFollowers, getFollowerNames)
-    --TODO
-    --convert languages to colours
-    --put all the main users followers in a hash set
 
 import Graphics.Gloss as G
+import LangColours (langToHexColour, Object)
 
 show :: Picture -> IO ()
 show picture = display displaySettings white picture
@@ -24,12 +22,12 @@ offset = 0
 displaySettings :: G.Display
 displaySettings = InWindow "Git-Vis" (width, height) (offset, offset)
 
-makeProfileCircle :: User -> [UserCoOrd] -> Picture
-makeProfileCircle user coOrds =  Pictures (lines ++ [drawPicAt (Color colour circle) (x, y),
+makeProfileCircle :: User -> [UserCoOrd] -> Object -> Picture
+makeProfileCircle user coOrds colourJson =  Pictures (lines ++ [drawPicAt (Color colour circle) (x, y),
                                  drawPicAt name (x, y+500)])
                         where
                         circle = circleSolid (getSizeCircle (User.totalSize user))
-                        colour = getLangColour (User.mostUsedLang user)
+                        colour = getLangColour (User.mostUsedLang user) colourJson
                         name = Scale 5 5 (Text $ User.name user)
                         (x, y) = getUserCoOrds (User.name user) coOrds
                         lines = drawLinesToFollowers (x, y) (getFollowerNames user) coOrds
@@ -38,8 +36,13 @@ makeProfileCircle user coOrds =  Pictures (lines ++ [drawPicAt (Color colour cir
 getSizeCircle :: Int -> Float
 getSizeCircle x = log (fromIntegral x) * 100
 
-getLangColour :: String -> Color
-getLangColour _ = red
+getLangColour :: String -> Object -> Color
+getLangColour langName json = makeColorI r g b a
+    where   colour = langToHexColour langName json
+            r = colour !! 0
+            g = colour !! 1
+            b = colour !! 2
+            a = colour !! 3
 
 drawPicAt :: Picture -> (Float, Float) -> Picture
 drawPicAt pic (x, y) = translate x y pic
@@ -69,9 +72,9 @@ getUserCoOrds name (u:us)
 
 
 
-draw :: [User] -> Picture
-draw [] = Blank
-draw users = Pictures (map (`makeProfileCircle` coOrds) users)
+draw :: [User] -> Object -> Picture
+draw [] _ = Blank
+draw users colourJson= Pictures (map (\x -> makeProfileCircle x coOrds colourJson) users)
     where   offset = getOffset (length users)
             coOrds = calcCoOrds users offset (100, 0)
 
