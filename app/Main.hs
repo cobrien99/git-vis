@@ -17,6 +17,11 @@ import LangColours (loadJSON)
 handleMaybe :: Maybe a -> a
 handleMaybe (Just a) = a
 
+{-A program that creates a social graph of a given user. 
+The User and all their followers are represented as circles with connecting lines representing followers.
+ The size and colour of the circle represent the total size of their repos and thei most used language respectively. 
+Implemented 100% in Haskell for the challenge.-}
+
 main :: IO ()
 main = do
         loadEnv
