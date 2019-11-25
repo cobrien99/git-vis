@@ -4,15 +4,15 @@ module GitFollowers
     ( githubFollowers, Follower, getFollowerName
     ) where
 
-import Prelude.Compat 
+import           Prelude.Compat
 
-import Data.Text         (pack, unpack)
+import           Data.Text                        (pack, unpack)
 
+import qualified GitHub.Data.Name                 as Name
 import qualified GitHub.Endpoints.Users.Followers as G
-import qualified GitHub.Data.Name as Name
-import qualified GitHub.Request as R (executeRequestMaybe)
+import qualified GitHub.Request                   as R (executeRequestMaybe)
 
-import Data.Vector as V (Vector, map)
+import           Data.Vector                      as V (Vector, map)
 
 --takes a username and returns an array of the users following that username
 githubFollowers :: String -> Maybe G.Auth-> IO (Maybe (Vector Follower))
@@ -23,11 +23,11 @@ githubFollowers userName auth = do
        (Left error)  -> return Nothing
        (Right repos) -> return $ Just (V.map makeFollower repos)
 
-data Follower = 
+data Follower =
     Follower {
-        name :: String,
-        id :: Int,
-        avatarUrl :: String,
+        name       :: String,
+        id         :: Int,
+        avatarUrl  :: String,
         profileUrl :: String
     }
 
