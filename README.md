@@ -29,7 +29,7 @@ This program also uses an Auth token to allow more requests with the GitHub api.
 
 I used [Phadejs Haskell library for querying the GitHub api](https://github.com/phadej/github). While I was using the api I wrote two functions that I was surprised weren't included in the api to begin with. So when I finished this project I forked the GitHub Haskell api, added my new functions and [made a pull request](https://github.com/phadej/github/pull/413). The changes are currently under review.
 
-[Image of my pull request](https://i.imgur.com/ju7nWEf.png)
+![Image of my pull request](https://i.imgur.com/ju7nWEf.png)
 
 ## Challenges and room for improvement
 
